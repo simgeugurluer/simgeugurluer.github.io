@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dr. Simge Uğurluer | Kill The Campaign</title>
+    <link rel="icon" href="data:;base64,iVBORw0KGgo=">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+
+        :root {
+            --kill-yellow: #FFDE00;
+            --bg-black: #0a0a0a;
+            --text-white: #ffffff;
+            --card-radius: 12px;
+            --font-stack: 'Inter', sans-serif;
+            --accent-orange: #FF5500;
+            --table-border: #222;
+            --dead-red: #ff3300;
+            --alive-green: #00ff88;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background-color: var(--bg-black);
+            color: var(--text-white);
+            font-family: var(--font-stack);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 0;
+            overflow-x: hidden;
+        }
+
+        /* NAVIGATION (SITE IDENTITY) */
+        nav {
+            position: fixed;
+            top: 0; left: 0; width: 100%;
+            padding: 1.5rem 4rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 10000;
+            background: rgba(10, 10, 10, 0.9);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid #222;
+        }
+
+        nav a {
+            color: var(--text-white);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        /* ONBOARDING MODAL */
+        #onboarding-modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.95); z-index: 20000;
+            display: flex; align-items: center; justify-content: center; padding: 1rem;
+        }
+        .onboarding-content {
+            background: var(--kill-yellow); color: #000; padding: clamp(1.5rem, 5vw, 3rem);
+            max-width: 600px; width: 100%; border: 8px solid #000;
+            box-shadow: 0 0 100px rgba(255, 222, 0, 0.2);
+        }
+        .onboarding-content h2 { font-size: clamp(1.8rem, 8vw, 3rem); font-weight: 900; text-transform: uppercase; margin-bottom: 1.5rem; line-height: 0.9; }
+        .onboarding-step { margin-bottom: 1rem; border-left: 4px solid #000; padding-left: 1rem; }
+        .onboarding-step strong { display: block; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.1em; }
+        .onboarding-step p { font-size: 1rem; font-weight: 600; }
+
+        /* TIMER & NOTIFICATIONS */
+        #timer-container { position: fixed; top: 0; left: 0; width: 100%; height: 6px; background: #111; z-index: 15000; display: none; }
+        #timer-bar { width: 100%; height: 100%; background: var(--kill-yellow); transition: width 1s linear; }
+        #timer-text { position: fixed; top: 5rem; right: 2rem; font-size: 1.5rem; font-weight: 900; color: var(--kill-yellow); font-family: monospace; z-index: 1001; display: none; background: rgba(0,0,0,0.8); padding: 0.2rem 0.8rem; border: 2px solid var(--kill-yellow); }
+
+        #notification { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.9); background: var(--kill-yellow); color: #000; padding: 2rem; text-align: center; z-index: 2000; display: none; opacity: 0; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); border: 8px solid #000; width: 90%; max-width: 400px; }
+        #notification.show { display: block; opacity: 1; transform: translate(-50%, -50%) scale(1); }
+
+        header { text-align: center; margin-top: 120px; margin-bottom: 2rem; width: 100%; border-bottom: 1px solid var(--table-border); padding-bottom: 1rem; }
+        h1 { font-size: clamp(1.2rem, 5vw, 3rem); text-transform: uppercase; font-weight: 900; color: var(--kill-yellow); line-height: 1; }
+
+        /* TABLETOP LAYOUT */
+        .war-room {
+            display: grid;
+            grid-template-areas: 
+                "target-deck main-target kill-deck"
+                "discard arsenal discard-2";
+            grid-template-columns: 1fr 1.8fr 1fr;
+            gap: 1.5rem;
+            width: 100%;
+            max-width: 1200px;
+            margin: auto;
+            align-items: start;
+            padding: 0 1rem;
+        }
+
+        /* DECKS & DISCARD */
+        .deck-zone { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; }
+        .card-stack {
+            width: 100%; max-width: 140px; aspect-ratio: 2/3; background: #111; border: 2px solid #444; border-radius: var(--card-radius);
+            display: flex; align-items: center; justify-content: center; text-transform: uppercase; font-weight: 900; font-size: 0.7rem; color: var(--kill-yellow);
+            cursor: pointer; transition: all 0.2s ease; box-shadow: 2px 2px 0 #222, 4px 4px 0 #111; user-select: none; text-align: center; padding: 1rem;
+        }
+        .card-stack:hover { transform: translateY(-5px); border-color: var(--kill-yellow); }
+
+        .discard-pile {
+            grid-area: discard;
+            width: 100%; max-width: 140px; aspect-ratio: 2/3; border: 2px solid #222; border-radius: var(--card-radius);
+            position: relative; display: flex; align-items: center; justify-content: center;
+            color: #222; font-weight: 900; font-size: 0.6rem; text-transform: uppercase;
+            justify-self: center;
+        }
+        .discard-pile .discarded-card {
+            position: absolute; width: 100%; height: 100%; background: #111; border: 1px solid #333; border-radius: var(--card-radius);
+            transform: rotate(var(--r));
+        }
+
+        /* SLOTS */
+        .slot-label { text-transform: uppercase; font-size: 0.6rem; letter-spacing: 0.15em; color: #555; margin-bottom: 0.8rem; font-weight: 900; text-align: center; }
+        .main-target-zone { grid-area: main-target; display: flex; flex-direction: column; align-items: center; width: 100%; position: relative; }
+        
+        .card-slot { 
+            width: 100%; 
+            max-width: 300px; 
+            aspect-ratio: 2/3; 
+            border: 2px dashed #333; 
+            border-radius: var(--card-radius); 
+            display: flex; align-items: center; justify-content: center; 
+            color: #222; font-weight: 900; text-transform: uppercase; font-size: 0.6rem;
+            position: relative;
+        }
+
+        .arsenal-zone { grid-area: arsenal; display: flex; flex-direction: column; align-items: center; border-top: 1px solid var(--table-border); padding-top: 1.5rem; width: 100%; }
+        .hand { 
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            width: 100%;
+            max-width: 700px;
+        }
+        .arsenal-slot {
+            width: 100%;
+            aspect-ratio: 2/3;
+            border: 2px dashed #333;
+            border-radius: var(--card-radius);
+            display: flex; align-items: center; justify-content: center;
+            color: #222; text-transform: uppercase; font-size: 0.5rem;
+        }
+
+        /* CARD STYLING */
+        .card { width: 100%; height: 100%; border-radius: var(--card-radius); padding: clamp(0.8rem, 2vw, 1.2rem); display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 10px 20px rgba(0,0,0,0.5); transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1); opacity: 0; cursor: pointer; position: relative; }
+        .card.visible { opacity: 1; transform: scale(1) translate(0) rotate(0); }
+
+        .card-target { background: #1a1a1a; border: 2px solid #333; color: var(--text-white); transform: translateY(-20px); }
+        .card-kill { background: var(--kill-yellow); color: #000; border: 2px solid #000; transform: translateY(20px); }
+
+        .card.selected { border: 4px solid var(--accent-orange); transform: scale(1.05) translateY(-10px); z-index: 20; box-shadow: 0 0 30px rgba(255, 85, 0, 0.3); }
+        .card.fade-out { opacity: 0; transform: scale(0.8) translateY(50px); pointer-events: none; }
+
+        /* VERDICT STAMPS */
+        .stamp {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(3) rotate(-20deg);
+            opacity: 0; pointer-events: none; font-weight: 900; font-size: clamp(2rem, 10vw, 4rem); padding: 0.5rem 1rem; border: 8px solid;
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 100;
+        }
+        .stamp.show { opacity: 0.8; transform: translate(-50%, -50%) scale(1) rotate(-15deg); }
+        .stamp-dead { color: var(--dead-red); border-color: var(--dead-red); }
+        .stamp-alive { color: var(--alive-green); border-color: var(--alive-green); }
+
+        /* CONTENT */
+        .card-type { font-size: clamp(0.45rem, 1.5vw, 0.6rem); font-weight: 900; text-transform: uppercase; border-bottom: 1px solid currentColor; margin-bottom: 0.4rem; padding-bottom: 0.1rem; }
+        h2 { font-size: clamp(0.9rem, 2.5vw, 1.2rem); font-weight: 900; text-transform: uppercase; line-height: 1.1; margin-bottom: 0.5rem; }
+        p { font-size: clamp(0.7rem, 1.8vw, 0.85rem); line-height: 1.3; opacity: 0.8; }
+
+        .play-preview { width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 4px; margin: 0.5rem 0; display: flex; align-items: center; justify-content: center; border: 1px solid #333; }
+        .play-preview::after { content: '▶ WATCH'; font-size: 0.5rem; font-weight: 900; background: var(--kill-yellow); color: #000; padding: 0.3rem 0.6rem; border-radius: 3px; }
+
+        /* CONTROLS */
+        .controls-main { display: flex; gap: 0.8rem; margin: 2rem 0; flex-wrap: wrap; justify-content: center; width: 100%; align-items: center; max-width: 800px; }
+        .verdict-controls { display: none; gap: 1rem; margin-top: 1rem; width: 100%; justify-content: center; flex-wrap: wrap; }
+
+        button, select { padding: 0.7rem 1.2rem; font-size: 0.75rem; font-weight: 900; text-transform: uppercase; cursor: pointer; transition: all 0.2s ease; font-family: inherit; border: 2px solid; background: transparent; color: #fff; }
+        .btn-deal { background: var(--kill-yellow); color: #000; border-color: var(--kill-yellow); }
+        .btn-reload { background: #333; border-color: #555; color: #aaa; display: none; }
+        .btn-reload:hover { border-color: var(--kill-yellow); color: #fff; }
+        .btn-timer { background: var(--accent-orange); border-color: var(--accent-orange); display: none; }
+        .btn-dead-verdict { border-color: var(--dead-red); color: var(--dead-red); }
+        .btn-alive-verdict { border-color: var(--alive-green); color: var(--alive-green); }
+
+        select { background: #111; color: var(--kill-yellow); border-color: #444; }
+
+        /* CONTACT SECTION (SITE IDENTITY) */
+        #contact {
+            background: #111;
+            color: var(--text-white);
+            padding: 100px 40px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 100px;
+            border-top: 1px solid #222;
+        }
+
+        #contact h2 {
+            font-size: 3.5rem;
+            text-transform: uppercase;
+            border-bottom: 2px solid var(--text-white);
+            padding-bottom: 20px;
+            margin-bottom: 60px;
+            width: 100%;
+            max-width: 1000px;
+            letter-spacing: -0.02em;
+        }
+
+        .contact-wrapper {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 80px;
+            width: 100%;
+            max-width: 1000px;
+            align-items: center;
+        }
+
+        .contact-image {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            border: 4px solid var(--text-white);
+            overflow: hidden;
+        }
+
+        .contact-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: grayscale(1);
+        }
+
+        .contact-link {
+            font-size: clamp(1.5rem, 4vw, 3.5rem);
+            color: var(--text-white);
+            text-decoration: none;
+            font-weight: 800;
+            line-height: 1;
+            letter-spacing: -0.02em;
+            transition: color 0.3s;
+        }
+        .contact-link:hover { color: var(--kill-yellow); }
+
+        /* BREAKPOINTS */
+        @media (max-width: 1024px) {
+            .war-room {
+                grid-template-areas: 
+                    "target-deck main-target kill-deck"
+                    "discard arsenal discard";
+                grid-template-columns: 120px 1fr 120px;
+            }
+            .contact-wrapper { gap: 40px; grid-template-columns: 300px 1fr; }
+        }
+
+        @media (max-width: 768px) {
+            nav { padding: 1rem 2rem; }
+            .nav-links { display: none; }
+            .war-room { 
+                grid-template-areas: 
+                    "target-deck kill-deck" 
+                    "main-target main-target" 
+                    "arsenal arsenal" 
+                    "discard discard"; 
+                grid-template-columns: 1fr 1fr; 
+                gap: 1rem;
+            }
+            .hand { grid-template-columns: 1fr 1fr; }
+            .arsenal-slot:last-child { grid-column: span 2; max-width: 50%; justify-self: center; }
+            button, select { width: 100%; }
+            .controls-main > div { width: 100%; }
+            #contact h2 { font-size: 2.5rem; }
+            .contact-wrapper { grid-template-columns: 1fr; text-align: center; }
+            .contact-image { max-width: 280px; margin: 0 auto; }
+            .contact-link { font-size: 1.8rem; }
+        }
+
+        @media (max-width: 480px) {
+            .hand { grid-template-columns: 1fr; }
+            .arsenal-slot { aspect-ratio: auto; min-height: 180px; }
+            .arsenal-slot:last-child { grid-column: span 1; max-width: none; }
+            .card-slot { max-width: 240px; }
+            h1 { margin-bottom: 1rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navigation -->
+    <nav>
+        <a href="index.html" lang="tr">Dr. Simge Uğurluer</a>
+        <div class="nav-links">
+            <a href="index.html#games">Projects</a>
+            <a href="index.html#courses">Courses</a>
+            <a href="index.html#research">Research</a>
+            <a href="#contact">Contact</a>
+        </div>
+    </nav>
+
+    <div id="onboarding-modal">
+        <div class="onboarding-content">
+            <h2>Welcome to the War Room</h2>
+            <div class="onboarding-step">
+                <strong>Step 1: Choose a Target</strong>
+                <p>Click the Archive Deck to draw a campaign from the past.</p>
+            </div>
+            <div class="onboarding-step">
+                <strong>Step 2: Equip a Weapon</strong>
+                <p>Click the Arsenal Deck 3 times, then pick the mode that will most likely KILL the campaign today.</p>
+            </div>
+            <div class="onboarding-step">
+                <strong>Step 3: Execute Pitch</strong>
+                <p>Deliver a sharp strategic critique before time runs out.</p>
+            </div>
+            <button onclick="document.getElementById('onboarding-modal').style.display='none'" style="background: #000; color: #fff; border: none; width: 100%; margin-top: 1rem;">START MISSION</button>
+        </div>
+    </div>
+
+    <div id="timer-container"><div id="timer-bar"></div></div>
+    <div id="timer-text">01:00</div>
+
+    <div id="notification">
+        <h2 style="font-size: 2rem; font-weight: 900; text-transform: uppercase;">Time's Up</h2>
+        <p style="font-weight: 900; margin: 1rem 0; font-size: 0.8rem;">THE CAMPAIGN IS DEAD.</p>
+        <button onclick="hideNotification()" style="background: #000; color: #fff; border: none; width: 100%;">Final Verdict</button>
+    </div>
+
+    <header><h1>Kill The Campaign</h1></header>
+
+    <div class="war-room">
+        <div class="deck-zone" style="grid-area: target-deck;">
+            <div class="slot-label">Archive</div>
+            <div class="card-stack" onclick="drawTarget()">DRAW</div>
+        </div>
+
+        <div class="main-target-zone">
+            <div class="slot-label">The Victim</div>
+            <div id="target-slot" class="card-slot">Target Slot</div>
+            <div id="stamp-dead" class="stamp stamp-dead">DEAD</div>
+            <div id="stamp-alive" class="stamp stamp-alive">ALIVE</div>
+        </div>
+
+        <div class="deck-zone" style="grid-area: kill-deck;">
+            <div class="slot-label">Arsenal</div>
+            <div class="card-stack" onclick="drawArsenalOneByOne()">DRAW</div>
+        </div>
+
+        <div class="discard-pile" id="discard-pile">DISCARD</div>
+
+        <div class="arsenal-zone">
+            <div class="slot-label" id="arsenal-label">Your Hand (Click to Commit)</div>
+            <div class="hand" id="kill-hand-slot">
+                <div class="arsenal-slot" id="arsenal-0">Weapon 1</div>
+                <div class="arsenal-slot" id="arsenal-1">Weapon 2</div>
+                <div class="arsenal-slot" id="arsenal-2">Weapon 3</div>
+            </div>
+            <div class="verdict-controls" id="verdict-controls">
+                <button class="btn-dead-verdict" onclick="applyVerdict('dead')">Clean Kill</button>
+                <button class="btn-alive-verdict" onclick="applyVerdict('alive')">Campaign Survived</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="controls-main">
+        <button class="btn-deal" onclick="resetTable()">New Round</button>
+        <button class="btn-reload" id="reload-btn" onclick="reloadHand()">Reload Hand (1)</button>
+        
+        <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; justify-content: center;">
+            <select id="timer-select">
+                <option value="30">30s Pitch</option>
+                <option value="60" selected>60s Pitch</option>
+                <option value="90">90s Pitch</option>
+                <option value="120">120s Pitch</option>
+            </select>
+            <button class="btn-timer" id="timer-btn" onclick="startPitch()">Start Pitch</button>
+        </div>
+    </div>
+
+    <!-- Contact Section (Identity Continued) -->
+    <section id="contact">
+        <h2>Connect</h2>
+        <div class="contact-wrapper">
+            <div class="contact-image"><img src="image.png" alt="Dr. Simge Uğurluer"></div>
+            <div>
+                <a href="mailto:simge.saner@yasar.edu.tr" class="contact-link">SIMGE.SANER@<br>YASAR.EDU.TR</a>
+                <div style="margin-top: 2rem;">
+                    <a href="https://www.yasar.edu.tr/" target="_blank" style="font-size: 1.5rem; color: var(--text-white); opacity: 0.7; text-decoration: none; font-weight: 800;">YAŞAR UNIVERSITY ↗</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        const targetCards = [
+            { title: "Apple '1984'", year: "1984", ytId: "VtvjbmoDx-I", context: "A runner shatters a dystopian 'Big Brother' screen with a sledgehammer." },
+            { title: "Budweiser 'Whassup?!'", year: "1999", ytId: "W16qzZ7J5YQ", context: "Friends yelling 'Whassup' into landlines watching the game." },
+            { title: "Old Spice 'Smell Like'", year: "2010", ytId: "owGykVbfgUE", context: "Fast-talking man teleporting through hyper-masculine scenarios." },
+            { title: "Wendy's 'Where's the Beef?'", year: "1984", ytId: "Ug75diEyiA0", context: "Elderly women inspect a tiny patty in a massive bun." },
+            { title: "Marlboro 'The Marlboro Man'", year: "1954", ytId: "N6xa30WYgT4", context: "Rugged Independence to sell filtered cigarettes." },
+            { title: "Coca-Cola 'Hilltop'", year: "1971", ytId: "1VM2eLhvsSM", context: "Diverse youth singing about buying the world a Coke." },
+            { title: "De Beers 'A Diamond is Forever'", year: "1947", ytId: "8pU6WQXkiOU", context: "Invented the modern diamond engagement ring tradition." },
+            { title: "Got Milk? 'Aaron Burr'", year: "1993", ytId: "0Gkqzxss8Ss", context: "History buff loses contest because his mouth is full of peanut butter." },
+            { title: "Dove 'Real Beauty Sketches'", year: "2004", ytId: "wpM499XhMJQ", context: "Forensic artist draws women based on their own descriptions." }
+        ];
+
+        const killCards = [
+            { type: "Platform Kill", title: "TikTok Skip Culture", desc: "Gen-Z swiped past it 14 seconds ago." },
+            { type: "Cultural Kill", title: "The Cringe Factor", desc: "Outdated stereotypes will get the brand roasted on X." },
+            { type: "Insight Kill", title: "Outdated Tension", desc: "The 'problem' this ad solves no longer exists." },
+            { type: "Brand Kill", title: "Trust Deficit", desc: "The brand has too much baggage to make this claim today." },
+            { type: "Execution Kill", title: "Meme Backfire", desc: "The internet will turn this into a parody that ruins the image." }
+        ];
+
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playSfx(type) {
+            try {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                if (type === 'whish') {
+                    osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.2);
+                } else if (type === 'slam') {
+                    osc.frequency.setValueAtTime(150, audioCtx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(40, audioCtx.currentTime + 0.1);
+                } else if (type === 'reload') {
+                    osc.type = 'square';
+                    osc.frequency.setValueAtTime(200, audioCtx.currentTime);
+                    osc.frequency.linearRampToValueAtTime(400, audioCtx.currentTime + 0.1);
+                }
+                gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+                osc.connect(gain); gain.connect(audioCtx.destination);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.2);
+            } catch(e) {}
+        }
+
+        let currentArsenalCount = 0;
+        let selectedKills = [];
+        let usedTargets = [];
+        let committedKill = null;
+        let hasReloaded = false;
+
+        function drawTarget() {
+            if (document.getElementById('t-card')) return;
+            const pool = targetCards.filter(t => !usedTargets.includes(t.title));
+            if (pool.length === 0) { alert("Deck empty!"); return; }
+            playSfx('whish');
+            const target = pool[Math.floor(Math.random() * pool.length)];
+            usedTargets.push(target.title);
+            document.getElementById('target-slot').innerHTML = `
+                <div class="card card-target" id="t-card">
+                    <div>
+                        <div class="card-type">Target // ${target.year}</div>
+                        <h2>${target.title}</h2>
+                    </div>
+                    <div class="play-preview" onclick="window.open('https://youtube.com/watch?v=${target.ytId}', '_blank')"></div>
+                    <div><p>${target.context}</p></div>
+                </div>
+            `;
+            setTimeout(() => document.getElementById('t-card').classList.add('visible'), 50);
+            checkReady();
+        }
+
+        function drawArsenalOneByOne() {
+            if (currentArsenalCount >= 3 || committedKill) return;
+            const index = currentArsenalCount;
+            playSfx('whish');
+            const pool = killCards.filter(k => !selectedKills.includes(k));
+            const kill = pool[Math.floor(Math.random() * pool.length)];
+            selectedKills.push(kill);
+            const slot = document.getElementById(`arsenal-${index}`);
+            slot.innerHTML = `
+                <div class="card card-kill" id="k-card-${index}" onclick="commitToWeapon(${index})">
+                    <div class="card-type">${kill.type}</div>
+                    <h2>${kill.title}</h2>
+                    <p>${kill.desc}</p>
+                </div>
+            `;
+            setTimeout(() => {
+                const card = document.getElementById(`k-card-${index}`);
+                if (card) card.classList.add('visible');
+            }, 50);
+            currentArsenalCount++;
+            checkReady();
+        }
+
+        function reloadHand() {
+            if (hasReloaded || committedKill) return;
+            playSfx('reload');
+            [0, 1, 2].forEach(i => {
+                const card = document.getElementById(`k-card-${i}`);
+                if (card) { card.classList.add('fade-out'); addToDiscard(); }
+            });
+            currentArsenalCount = 0;
+            selectedKills = [];
+            hasReloaded = true;
+            document.getElementById('reload-btn').style.display = 'none';
+            setTimeout(() => {
+                document.getElementById('kill-hand-slot').innerHTML = `
+                    <div class="arsenal-slot" id="arsenal-0"></div>
+                    <div class="arsenal-slot" id="arsenal-1"></div>
+                    <div class="arsenal-slot" id="arsenal-2"></div>
+                `;
+                for(let i=0; i<3; i++) { setTimeout(() => drawArsenalOneByOne(), i * 150); }
+            }, 400);
+        }
+
+        function commitToWeapon(index) {
+            if (currentArsenalCount < 3 || committedKill) return;
+            committedKill = selectedKills[index];
+            playSfx('whish');
+            [0, 1, 2].forEach(i => {
+                const card = document.getElementById(`k-card-${i}`);
+                if (i !== index) { card.classList.add('fade-out'); addToDiscard(); }
+                else { card.classList.add('selected'); }
+            });
+            document.getElementById('arsenal-label').innerText = "WEAPON COMMITTED";
+            document.getElementById('timer-btn').style.display = 'inline-block';
+            document.getElementById('reload-btn').style.display = 'none';
+        }
+
+        function addToDiscard() {
+            const pile = document.getElementById('discard-pile');
+            const div = document.createElement('div');
+            div.className = 'discarded-card';
+            div.style.setProperty('--r', (Math.random() * 20 - 10) + 'deg');
+            pile.appendChild(div);
+        }
+
+        function checkReady() {
+            if (document.getElementById('t-card') && currentArsenalCount === 3 && !committedKill) {
+                if (!hasReloaded) document.getElementById('reload-btn').style.display = 'inline-block';
+            }
+            if (document.getElementById('t-card') && currentArsenalCount === 3 && committedKill) {
+                document.getElementById('timer-btn').style.display = 'inline-block';
+            }
+        }
+
+        function applyVerdict(type) {
+            playSfx('slam');
+            document.getElementById(`stamp-${type}`).classList.add('show');
+            document.getElementById('verdict-controls').style.display = 'none';
+        }
+
+        function resetTable() {
+            currentArsenalCount = 0; selectedKills = []; committedKill = null; hasReloaded = false;
+            document.getElementById('target-slot').innerHTML = 'Target Slot';
+            document.getElementById('kill-hand-slot').innerHTML = `
+                <div class="arsenal-slot" id="arsenal-0">Weapon 1</div>
+                <div class="arsenal-slot" id="arsenal-1">Weapon 2</div>
+                <div class="arsenal-slot" id="arsenal-2">Weapon 3</div>
+            `;
+            document.getElementById('timer-btn').style.display = 'none';
+            document.getElementById('reload-btn').style.display = 'none';
+            document.getElementById('verdict-controls').style.display = 'none';
+            document.getElementById('arsenal-label').innerText = "Your Hand (Click to Commit)";
+            document.querySelectorAll('.stamp').forEach(s => s.classList.remove('show'));
+            hideNotification();
+            document.getElementById('timer-container').style.display = 'none';
+            document.getElementById('timer-text').style.display = 'none';
+        }
+
+        let timerInterval;
+        function startPitch() {
+            const container = document.getElementById('timer-container');
+            const text = document.getElementById('timer-text');
+            const duration = parseInt(document.getElementById('timer-select').value);
+            container.style.display = 'block'; text.style.display = 'block';
+            let timeLeft = duration;
+            text.innerText = `${Math.floor(timeLeft/60).toString().padStart(2, '0')}:${(timeLeft%60).toString().padStart(2, '0')}`;
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                text.innerText = `${Math.floor(timeLeft/60).toString().padStart(2, '0')}:${(timeLeft%60).toString().padStart(2, '0')}`;
+                document.getElementById('timer-bar').style.width = `${(timeLeft / duration) * 100}%`;
+                if (timeLeft <= 0) { clearInterval(timerInterval); showNotification(); }
+            }, 1000);
+        }
+
+        function showNotification() { document.getElementById('notification').classList.add('show'); }
+        function hideNotification() { 
+            document.getElementById('notification').classList.remove('show');
+            if (document.getElementById('timer-text').style.display === 'block') { document.getElementById('verdict-controls').style.display = 'flex'; }
+        }
+    </script>
+</body>
+</html>

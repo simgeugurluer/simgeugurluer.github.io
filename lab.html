@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dr. Simge Uğurluer | MUSEO_LOGIC</title>
+    <!-- GSAP for physical animations -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <!-- html2canvas for Save feature -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        :root {
+            --bg: #ffffff;
+            --text: #111111;
+            --accent: #FF5500;
+            --gray: #888888;
+            --machine-red: #8b0000;
+            --machine-border: #4a0000;
+            --grid-line: rgba(0, 0, 0, 0.05);
+            --font-stack: "Neue Haas Grotesk Display Pro", "Helvetica Neue", Helvetica, Arial, sans-serif;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: var(--font-stack);
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        /* NAVIGATION */
+        nav {
+            position: fixed;
+            top: 0; left: 0; width: 100%;
+            padding: 2rem 4rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            background: rgba(255,255,255,0.9);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+
+        nav a {
+            color: var(--text);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        /* GRID BACKGROUND */
+        .grid {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -1;
+            background-image: 
+                linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+                linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
+            background-size: 50px 50px;
+        }
+
+        header {
+            text-align: center;
+            margin-top: 160px; /* Space for fixed nav */
+            margin-bottom: 30px;
+        }
+
+        .lab-title {
+            font-size: 4rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: -0.02em;
+        }
+
+        /* MACHINE CONTAINER */
+        #machine-outer {
+            position: relative;
+            padding: 30px;
+            background: linear-gradient(135deg, var(--machine-red), #4a0000);
+            border: 8px solid var(--machine-border);
+            border-radius: 10px;
+            box-shadow: 0 30px 100px rgba(0,0,0,0.15);
+            display: flex;
+            gap: 10px;
+            z-index: 10;
+        }
+
+        .column-box {
+            width: 260px;
+            height: 480px; /* 3 rows of 160px */
+            background: #ffffff;
+            border: 4px solid #222;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .reel {
+            display: flex;
+            flex-direction: column;
+            will-change: transform;
+        }
+
+        .slot-item {
+            height: 160px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            text-align: center;
+            padding: 0 30px;
+            color: #111;
+            border-bottom: 1px solid #eee;
+        }
+
+        /* CENTER BREIFING LINE */
+        .brief-line {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            width: 100%;
+            height: 160px;
+            transform: translateY(-50%);
+            border-top: 3px solid var(--accent);
+            border-bottom: 3px solid var(--accent);
+            background: rgba(255, 85, 0, 0.05);
+            pointer-events: none;
+            z-index: 15;
+        }
+
+        /* BRIEFING OVERLAY */
+        #result-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #receipt-container {
+            width: 550px;
+            background: #fff;
+            border: 1px solid #ddd;
+            border-top: 8px solid var(--accent);
+            box-shadow: 0 40px 100px rgba(0,0,0,0.1);
+            padding: 60px;
+            position: relative;
+        }
+
+        .receipt-header {
+            border-bottom: 2px solid #eee;
+            padding-bottom: 30px;
+            margin-bottom: 30px;
+        }
+
+        .receipt-header span {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            font-weight: 900;
+            color: var(--accent);
+            letter-spacing: 0.2em;
+        }
+
+        .receipt-header h2 {
+            font-size: 2.2rem;
+            text-transform: uppercase;
+            margin-top: 10px;
+            letter-spacing: -0.02em;
+        }
+
+        .receipt-section {
+            margin-bottom: 30px;
+        }
+
+        .receipt-section label {
+            display: block;
+            font-size: 0.7rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            color: var(--gray);
+            margin-bottom: 10px;
+            letter-spacing: 0.1em;
+        }
+
+        .receipt-section p {
+            font-size: 1.2rem;
+            line-height: 1.5;
+            font-weight: 500;
+        }
+
+        /* BUTTONS */
+        .btn-spin {
+            margin-top: 50px;
+            background: var(--accent);
+            border: none;
+            color: #fff;
+            padding: 1.5rem 5rem;
+            font-family: inherit;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            cursor: pointer;
+            font-size: 1.1rem;
+            transition: all 0.2s;
+        }
+
+        .btn-spin:hover { background: #e64d00; transform: scale(1.05); }
+        .btn-spin:active { transform: scale(0.95); }
+        .btn-spin:disabled { background: #ccc; cursor: not-allowed; }
+
+        .btn-close {
+            background: var(--text);
+            color: #fff;
+            border: none;
+            padding: 15px 30px;
+            font-family: inherit;
+            font-weight: 900;
+            text-transform: uppercase;
+            cursor: pointer;
+            margin-top: 20px;
+            letter-spacing: 0.1em;
+        }
+
+        .btn-save {
+            background: #eee;
+            color: #111;
+            border: 1px solid #ddd;
+            padding: 15px 30px;
+            font-family: inherit;
+            font-weight: 900;
+            text-transform: uppercase;
+            cursor: pointer;
+            margin-top: 20px;
+            margin-right: 10px;
+            letter-spacing: 0.1em;
+            transition: all 0.2s;
+        }
+
+        .btn-save:hover { background: #ddd; }
+
+        /* INFORMATION SECTION */
+        #research-info {
+            margin-top: 80px;
+            width: 100%;
+            max-width: 1000px;
+            border-top: 1px solid #eee;
+            padding: 60px 40px;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 80px;
+        }
+
+        .info-col h3 {
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 0.2em;
+            color: var(--accent);
+            margin-bottom: 25px;
+            font-weight: 900;
+        }
+
+        .info-col p {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            color: #444;
+            margin-bottom: 20px;
+        }
+
+        .info-tag {
+            margin-top: 40px;
+            padding: 20px;
+            border: 1px solid #eee;
+            font-family: monospace;
+            font-size: 0.75rem;
+            color: #999;
+            text-transform: uppercase;
+            line-height: 1.8;
+        }
+
+        /* CONTACT SECTION */
+        #contact {
+            background: var(--text);
+            color: var(--bg);
+            padding: 100px 40px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 100px;
+        }
+
+        #contact h2 {
+            font-size: 3.5rem;
+            text-transform: uppercase;
+            border-bottom: 2px solid var(--bg);
+            padding-bottom: 20px;
+            margin-bottom: 60px;
+            width: 100%;
+            max-width: 1000px;
+            letter-spacing: -0.02em;
+        }
+
+        .contact-wrapper {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 80px;
+            width: 100%;
+            max-width: 1000px;
+            align-items: center;
+        }
+
+        .contact-image {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            border: 4px solid var(--bg);
+            overflow: hidden;
+        }
+
+        .contact-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: grayscale(1);
+        }
+
+        .contact-link {
+            font-size: clamp(1.5rem, 4vw, 3.5rem);
+            color: var(--bg);
+            text-decoration: none;
+            font-weight: 800;
+            line-height: 1;
+            letter-spacing: -0.02em;
+            transition: color 0.3s;
+        }
+
+        /* MOBILE RESPONSIVE QUERIES */
+        @media (max-width: 1024px) {
+            #machine-outer { transform: scale(0.85); transform-origin: center top; }
+            .info-grid { gap: 40px; }
+        }
+
+        @media (max-width: 768px) {
+            nav { padding: 1rem 2rem; }
+            .nav-links { display: none; }
+            
+            .lab-title { font-size: 2.5rem; }
+            header { margin-top: 100px; margin-bottom: 10px; }
+
+            #machine-outer { 
+                transform: scale(0.6); 
+                transform-origin: center top;
+                margin-bottom: -180px; /* Pull up following content */
+            }
+            
+            #receipt-container { 
+                width: 90vw; 
+                padding: 30px; 
+                max-height: 90vh;
+                overflow-y: auto;
+            }
+            .receipt-header h2 { font-size: 1.5rem; }
+            .receipt-section p { font-size: 1rem; }
+
+            #research-info { margin-top: 40px; padding: 40px 20px; }
+            .info-grid { grid-template-columns: 1fr; gap: 40px; }
+
+            #contact { padding: 60px 20px; margin-top: 60px; }
+            .contact-wrapper { grid-template-columns: 1fr; gap: 40px; text-align: center; }
+            .contact-image { max-width: 280px; margin: 0 auto; }
+            .contact-link { font-size: 1.8rem; }
+        }
+
+        @media (max-width: 480px) {
+            header { margin-top: 80px; }
+            .lab-title { font-size: 2rem; }
+            #machine-outer { 
+                transform: scale(0.4); 
+                margin-bottom: -280px; 
+            }
+            .btn-spin { padding: 1.2rem 3rem; font-size: 0.9rem; margin-top: 10px; }
+            #receipt-container { padding: 20px; }
+            .receipt-header h2 { font-size: 1.2rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="grid"></div>
+
+    <!-- Navigation -->
+    <nav>
+        <a href="index.html" lang="tr">Dr. Simge Uğurluer</a>
+        <div class="nav-links">
+            <a href="index.html#games">Projects</a>
+            <a href="index.html#courses">Courses</a>
+            <a href="index.html#research">Research</a>
+            <a href="#contact">Contact</a>
+        </div>
+    </nav>
+
+    <header>
+        <div class="lab-title">Museo_Logic</div>
+        <p style="font-size: 0.8rem; font-weight: 800; color: var(--gray); text-transform: uppercase; letter-spacing: 0.3em; margin-top: 10px;">
+            Strategic Briefing Model
+        </p>
+    </header>
+
+    <div id="machine-outer">
+        <div class="brief-line"></div>
+        <div class="column-box"><div class="reel" id="reel-1"></div></div>
+        <div class="column-box"><div class="reel" id="reel-2"></div></div>
+        <div class="column-box"><div class="reel" id="reel-3"></div></div>
+    </div>
+
+    <button class="btn-spin" id="spin-btn">Start Briefing Scan</button>
+
+    <!-- Briefing Overlay -->
+    <div id="result-overlay">
+        <div id="receipt-container">
+            <div class="receipt-header">
+                <span>Briefing Scan Complete</span>
+                <h2>Strategic Blueprint</h2>
+            </div>
+            <div id="brief-data"></div>
+            <div style="display: flex; justify-content: flex-start;">
+                <button class="btn-save" id="btn-save" onclick="saveBlueprint()">Save as PNG</button>
+                <button class="btn-close" id="btn-close" onclick="resetLab()">New Scan</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Research Info -->
+    <section id="research-info">
+        <div class="info-grid">
+            <div class="info-col">
+                <h3>Origin & Context</h3>
+                <p><strong>MUSEO_LOGIC</strong> is a strategic simulation tool originating from Dr. Simge Uğurluer’s doctoral dissertation: <em>“New museology and virtual reality applications from the perspective of consumer behavior.”</em></p>
+                <p>The model operates at the intersection of <strong>New Museology</strong>, <strong>Experiential Marketing</strong>, and <strong>Advertising</strong>.</p>
+            </div>
+            <div class="info-col">
+                <h3>The Strategic Logic</h3>
+                <p>By synthesizing <strong>Heritage Core</strong>, <strong>Immersive Medium</strong>, and <strong>Visitor Segment</strong>, the tool generates directives that demonstrate how XR can be used to "advertise" history effectively.</p>
+                <div class="info-tag">AUTH: DR. SIMGE UĞURLUER (2024)<br>FACULTY OF COMMUNICATION // IZMIR</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact">
+        <h2>Connect</h2>
+        <div class="contact-wrapper">
+            <div class="contact-image"><img src="image.png" alt="Dr. Simge Uğurluer"></div>
+            <div>
+                <a href="mailto:simge.saner@yasar.edu.tr" class="contact-link">SIMGE.SANER@<br>YASAR.EDU.TR</a>
+                <div style="margin-top: 2rem;">
+                    <a href="https://www.yasar.edu.tr/" target="_blank" style="font-size: 1.5rem; color: var(--bg); opacity: 0.7; text-decoration: none; font-weight: 800;">YAŞAR UNIVERSITY ↗</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        const heritage = ["Ancient Agora", "Ottoman Bazaar", "Industrial Harbor", "Neolithic Village", "Byzantine Cistern"];
+        const medium = ["Spatial AR", "Social VR", "Haptic Probing", "Gamified Mobile", "AI Narrator"];
+        const audience = ["Gen Z Natives", "Global Tourists", "Local Families", "Academic Groups", "K-12 Students"];
+
+        const insights = {
+            "Ancient Agora": "Focus on scale and volume. Visualizing the physical magnitude of the ruins helps ground the historical context for modern visitors.",
+            "Ottoman Bazaar": "Incorporate sensory layers. Recreating the spatial soundscapes of the marketplace adds necessary depth to the social narrative.",
+            "Industrial Harbor": "Emphasize chronological transition. Use visual overlays to bridge the gap between historical industry and contemporary urban spaces.",
+            "Neolithic Village": "Focus on domestic agency. Research indicates that interactive role-play scenarios significantly increase dwell-time and empathy.",
+            "Byzantine Cistern": "Utilize light and reflection dynamics. Digital projections should interact with the existing architecture to maintain atmosphere.",
+            "Spatial AR": "Ensure technical transparency. Digital layers must feel like a natural extension of the physical ruins rather than a visual barrier.",
+            "Social VR": "Prioritize collaborative interaction. Shared goals within the virtual space increase both cognitive retention and visitor satisfaction.",
+            "Haptic Probing": "Focus on material empathy. Allowing visitors to 'touch' digital artifacts creates a stronger connection to historical culture.",
+            "Gamified Mobile": "Implement quest-based loops. Use competitive mechanics to guide the visitor through the narrative without external intervention.",
+            "AI Narrator": "Personalize the dialogue. Real-time, reactive storytelling creates a uniquely tailored visitor experience based on individual interest.",
+            "Gen Z Natives": "Enable social agency. Create opportunities for visitors to leave digital traces and interact with peer-generated content.",
+            "Global Tourists": "Design for language-agnosticism. Use intuitive UI paths and universal symbols to bridge cultural and linguistic gaps.",
+            "Local Families": "Focus on co-experience. Design interactions that require parent-child collaboration to unlock specific narrative layers.",
+            "Academic Groups": "Provide deep-data overlays. Allow for 'pro-mode' toggles where users can access raw archaeological datasets and citations.",
+            "K-12 Students": "Scaffold the learning. Use bite-sized 'discovery missions' to deliver educational curriculum without cognitive overload."
+        };
+
+        const reels = [document.getElementById('reel-1'), document.getElementById('reel-2'), document.getElementById('reel-3')];
+
+        function init() {
+            reels.forEach((reel, i) => {
+                const list = i === 0 ? heritage : i === 1 ? medium : audience;
+                const items = Array(50).fill(list).flat();
+                reel.innerHTML = items.map(text => `<div class="slot-item">${text}</div>`).join('');
+                gsap.set(reel, { y: -(list.length * 20 * 160) });
+            });
+        }
+
+        function spin() {
+            document.getElementById('spin-btn').disabled = true;
+            document.getElementById('spin-btn').innerText = "SCANNING...";
+            reels.forEach((reel, i) => {
+                const list = i === 0 ? heritage : i === 1 ? medium : audience;
+                const randomIndex = Math.floor(Math.random() * list.length);
+                const currentY = gsap.getProperty(reel, "y");
+                if (currentY < -(list.length * 40 * 160)) gsap.set(reel, { y: -(list.length * 20 * 160) });
+                const targetPos = (Math.round(gsap.getProperty(reel, "y") / 160) * 160) - (list.length * 160 * (5 + i)) - (randomIndex * 160);
+                gsap.timeline().to(reel, { y: "+=60", duration: 0.5, ease: "power2.inOut" })
+                    .to(reel, { y: targetPos, duration: 4 + (i * 0.8), ease: "back.out(0.8)", 
+                        onComplete: () => {
+                            gsap.to("#machine-outer", { x: 5, y: 5, duration: 0.05, repeat: 4, yoyo: true });
+                            if(i === 2) finalize();
+                        }
+                    });
+            });
+        }
+
+        function finalize() {
+            const finalResults = reels.map((reel, i) => {
+                const list = i === 0 ? heritage : i === 1 ? medium : audience;
+                const offsetFromStart = Math.abs(gsap.getProperty(reel, "y") / 160);
+                return list[(Math.round(offsetFromStart) + 1) % list.length];
+            });
+            const scanID = "UX-" + Math.floor(Math.random() * 10000);
+            const timestamp = new Date().toLocaleTimeString();
+            const date = new Date().toLocaleDateString();
+            document.getElementById('brief-data').innerHTML = `
+                <div id="metadata" style="font-size: 0.65rem; color: #ccc; margin-bottom: 25px; font-family: monospace;">ID: ${scanID} // TIME: ${timestamp} // DATE: ${date}</div>
+                <div class="receipt-section"><label>Core Synthesis</label><p>Deployment of <strong>${finalResults[1]}</strong> for <strong>${finalResults[0]}</strong> reconstruction, optimized for <strong>${finalResults[2]}</strong>.</p></div>
+                <div class="receipt-section"><label>Operational Directives</label><ul style="list-style: none; padding: 0;">
+                    <li style="margin-bottom: 12px; font-size: 1rem;"><span style="color: var(--accent); font-weight: 900; font-size: 0.65rem;">[CONTENT]</span> ${insights[finalResults[0]]}</li>
+                    <li style="margin-bottom: 12px; font-size: 1rem;"><span style="color: var(--accent); font-weight: 900; font-size: 0.65rem;">[INTERACTION]</span> ${insights[finalResults[1]]}</li>
+                    <li style="margin-bottom: 12px; font-size: 1rem;"><span style="color: var(--accent); font-weight: 900; font-size: 0.65rem;">[ENGAGEMENT]</span> ${insights[finalResults[2]]}</li>
+                </ul></div>
+                <div class="receipt-section" style="margin-top: 20px; padding: 15px; background: #f9f9f9; border-left: 4px solid var(--accent);"><label style="color: var(--accent);">Strategic Synergy</label><p style="font-size: 0.95rem; font-style: italic;">The combination of ${finalResults[1]} and ${finalResults[0]} creates a multi-vocal layer that satisfies the ${finalResults[2]} need for agency.</p></div>
+            `;
+            document.getElementById('result-overlay').style.display = 'flex';
+            gsap.fromTo("#receipt-container", { scale: 0.9, opacity: 0, y: 20 }, { scale: 1, opacity: 1, y: 0, duration: 0.6, ease: "power4.out" });
+        }
+
+        function saveBlueprint() {
+            const receipt = document.getElementById('receipt-container');
+            document.getElementById('btn-save').style.visibility = 'hidden';
+            document.getElementById('btn-close').style.visibility = 'hidden';
+            html2canvas(receipt, { backgroundColor: "#ffffff", scale: 2 }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = `MuseoLogic_Brief_${new Date().getTime()}.png`;
+                link.href = canvas.toDataURL();
+                link.click();
+                document.getElementById('btn-save').style.visibility = 'visible';
+                document.getElementById('btn-close').style.visibility = 'visible';
+            });
+        }
+
+        function resetLab() {
+            gsap.to("#receipt-container", { scale: 0.9, opacity: 0, duration: 0.3, onComplete: () => {
+                document.getElementById('result-overlay').style.display = 'none';
+                const spinBtn = document.getElementById('spin-btn');
+                spinBtn.disabled = false;
+                spinBtn.innerText = "Start Briefing Scan";
+            }});
+        }
+
+        document.getElementById('spin-btn').addEventListener('click', spin);
+        init();
+    </script>
+</body>
+</html>
