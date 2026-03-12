@@ -459,9 +459,34 @@ modalClose.addEventListener('click', () => projectModal.classList.remove('active
 projectModal.addEventListener('click', (e) => { if (e.target === projectModal) projectModal.classList.remove('active'); });
 
 // --------------------------------------------------------
-// 9. PORTRAIT SPOTLIGHT LOGIC
+// 9. PORTRAIT SPOTLIGHT & BIO ACCORDION
 // --------------------------------------------------------
 const portraitContainer = document.getElementById('portrait-container');
+const aboutToggle = document.getElementById('about-toggle');
+const aboutAccordion = document.getElementById('about-accordion');
+const contactSection = document.getElementById('contact');
+
+if (aboutToggle) {
+    aboutToggle.addEventListener('click', () => {
+        const isActive = aboutAccordion.classList.toggle('active');
+        contactSection.classList.toggle('expanded-profile');
+        
+        const toggleText = aboutToggle.querySelector('.toggle-text');
+        const toggleIcon = aboutToggle.querySelector('.toggle-icon');
+        
+        if (isActive) {
+            toggleText.textContent = "CLOSE MY STORY";
+            toggleIcon.textContent = "−";
+            // Scroll to the TOP of the contact section (where the photo is)
+            setTimeout(() => {
+                contactSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 100); // Trigger earlier to sync with the layout shift
+        } else {
+            toggleText.textContent = "A BIT MORE ABOUT MY STORY";
+            toggleIcon.textContent = "+";
+        }
+    });
+}
 
 if (portraitContainer) {
     portraitContainer.addEventListener('mousemove', (e) => {

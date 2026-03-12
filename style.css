@@ -687,12 +687,94 @@ p.lead {
     text-transform: uppercase;
 }
 
+/* Contact Section Expansion */
 .contact-wrapper {
     display: grid;
     grid-template-columns: 350px 1fr;
     gap: 6rem;
     align-items: center;
     margin-top: 4rem;
+    transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+#contact.expanded-profile .contact-wrapper {
+    grid-template-columns: 1fr;
+    gap: 3rem;
+    max-width: 900px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#contact.expanded-profile .contact-image {
+    order: -1;
+    max-width: 300px;
+    margin: 0 auto 2rem auto;
+}
+
+#contact.expanded-profile .contact-details {
+    text-align: center;
+}
+
+#contact.expanded-profile .bio-intro {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Accordion Styles */
+.about-toggle {
+    background: none;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: var(--bg);
+    padding: 0.8rem 1.5rem;
+    font-family: inherit;
+    font-weight: 800;
+    font-size: 0.8rem;
+    letter-spacing: 0.1em;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    transition: all 0.3s ease;
+}
+
+#contact.expanded-profile .about-toggle {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.about-toggle:hover {
+    background: var(--bg);
+    color: var(--text);
+    border-color: var(--bg);
+}
+
+.about-accordion {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 1s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.about-accordion.active {
+    max-height: 2000px; /* Large enough to fit content */
+}
+
+.accordion-content {
+    padding-bottom: 3rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 3rem;
+}
+
+.accordion-content p {
+    font-size: 1.1rem;
+    line-height: 1.8;
+    color: var(--bg);
+    opacity: 0.8;
+    margin-bottom: 1.5rem;
+    text-align: left;
+}
+
+#contact.expanded-profile .accordion-content p {
+    text-align: justify;
 }
 
 .contact-image {
