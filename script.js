@@ -107,11 +107,10 @@ pubItems.forEach(item => {
 
     citeBtn.addEventListener('click', (e) => {
         e.stopPropagation();
-        const citation = item.getAttribute('data-citation');
-        navigator.clipboard.writeText(citation).then(() => {
-            toast.classList.add('show');
-            setTimeout(() => toast.classList.remove('show'), 2000);
-        });
+        const link = item.getAttribute('data-link');
+        if (link) {
+            window.open(link, '_blank');
+        }
     });
 });
 
