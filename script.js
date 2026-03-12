@@ -370,20 +370,6 @@ const projectDetails = {
         methodology: "Gamifies strategic critique through randomized constraints, encouraging students to identify strategic vulnerabilities without relying on subjective opinions.",
         tech: ["Strategy", "Serious Games", "Deconstruction", "Classroom Toolkit"],
         link: "kill-campaign-test.html"
-    },
-    crisis: {
-        title: "PR Crisis Simulator",
-        category: "Serious Game",
-        description: "A digital training platform where communication students manage a high-stakes corporate crisis in real-time.",
-        methodology: "Built on a custom branching narrative engine. Uses AI-driven sentiment analysis.",
-        tech: ["JavaScript", "Node.js", "GPT-4 API", "Tailwind CSS"]
-    },
-    brand: {
-        title: "Brand Narrative Lens",
-        category: "AR Experience",
-        description: "An Augmented Reality application that overlays digital storytelling onto physical retail environments.",
-        methodology: "Investigated through qualitative user interviews and spatial heatmaps.",
-        tech: ["8th Wall", "WebAR", "Three.js", "Spark AR"]
     }
 };
 
