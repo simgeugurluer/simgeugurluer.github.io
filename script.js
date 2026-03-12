@@ -406,6 +406,18 @@ const courseDetails = {
         category: "Undergraduate Compulsory",
         img: "thumbnails/Marketing_Communications.png",
         info: "Explores the integrated nature of marketing communications, covering PR, advertising, personal selling, and digital strategy."
+    },
+    cross_cultural: {
+        title: "Cross-Cultural Advertising",
+        category: "Undergraduate Elective",
+        img: "thumbnails/Crosscultural_Advertising.png",
+        info: "Exploring how cultural differences influence advertising strategies and consumer perception in a globalized market."
+    },
+    exp_mkt: {
+        title: "Experiential Marketing",
+        category: "Undergraduate Elective",
+        img: "thumbnails/Experiential_Marketing.png",
+        info: "Focusing on creating memorable and engaging brand experiences that connect with consumers on an emotional level."
     }
 };
 
