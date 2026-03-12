@@ -105,10 +105,14 @@
                 <div class="card-front" style="background: var(--bg);">
                     <div style="flex-grow: 1; display: flex; align-items: center; justify-content: center;">
                         <svg width="100%" style="max-width: 140px; display: block;" viewBox="0 0 100 100">
-                            <!-- Katana/Slash Icon -->
-                            <path d="M 20 80 L 80 20" stroke="var(--text)" stroke-width="12" stroke-linecap="square" />
-                            <path d="M 25 75 L 15 85" stroke="#FF5500" stroke-width="12" stroke-linecap="square" />
-                            <line x1="40" y1="40" x2="60" y2="60" stroke="#FF5500" stroke-width="4" opacity="0.5" />
+                            <!-- Fragment 1 (Top Left) -->
+                            <path d="M 20 20 H 58 L 48 48 H 20 Z" fill="var(--text)" />
+                            <!-- Fragment 2 (Top Right - Offset) -->
+                            <path d="M 62 18 H 82 V 48 L 52 58 Z" fill="var(--text)" />
+                            <!-- Fragment 3 (Bottom Left) -->
+                            <path d="M 20 52 H 46 L 42 80 H 20 Z" fill="var(--text)" opacity="0.7" />
+                            <!-- Fragment 4 (Impact Piece - Orange) -->
+                            <path d="M 50 62 L 80 58 L 84 84 L 54 88 Z" fill="#FF5500" />
                         </svg>
                     </div>
                     <div>
